@@ -1,0 +1,48 @@
+﻿=======================================================================
+            👑 INVEST GOLD AFRICA - GUIDE DU SUPPORT CLIENT 👑
+=======================================================================
+Ce guide aide à résoudre les problèmes courants des investisseurs.
+
+-----------------------------------------------------------------------
+1. L'UTILISATEUR DIT : "J'ai envoyé 3000 F mais mon solde est à 0"
+-----------------------------------------------------------------------
+💡 CAUSE : L'utilisateur n'a pas encore envoyé sa preuve de dépôt ou
+          le Boss ne l'a pas encore validée dans l'Admin.
+✅ ACTION : 
+   - Demander la capture d'écran du SMS de transfert MTN.
+   - Vérifier l'ID de transaction dans l'Admin Panel.
+   - Cliquer sur "VALIDER" pour créditer le compte instantanément.
+
+-----------------------------------------------------------------------
+2. L'UTILISATEUR DIT : "Le bouton de retrait ne marche pas"
+-----------------------------------------------------------------------
+💡 CAUSE : Nous sommes en semaine. Les retraits sont limités au weekend.
+✅ RÉPONSE : "Bonjour ! Les coffres-forts n'ouvrent que le SAMEDI et 
+             le DIMANCHE pour garantir la sécurité des fonds. Revenez 
+             samedi matin dès 08h00 !"
+
+-----------------------------------------------------------------------
+3. L'UTILISATEUR DIT : "Je ne vois pas mon bonus de parrainage"
+-----------------------------------------------------------------------
+💡 CAUSE : Son ami s'est inscrit sans utiliser son code GOLD-XXXX.
+✅ ACTION : 
+   - Vérifier dans l'Admin si l'ami est bien dans la liste.
+   - Si l'erreur est réelle, utiliser le bouton "AJOUTER" de l'Admin
+     pour créditer manuellement les 2000 F au parrain.
+
+-----------------------------------------------------------------------
+4. SÉCURITÉ : "Mon compte est bloqué"
+-----------------------------------------------------------------------
+💡 CAUSE : L'utilisateur a été banni pour tentative de fraude (faux ID).
+✅ ACTION : 
+   - Vérifier les preuves de paiement. 
+   - Si c'est une erreur, cliquer sur "DÉBAN" dans l'Admin Panel.
+
+-----------------------------------------------------------------------
+🔥 RÈGLE D'OR : "Le client doit se sentir en sécurité"
+-----------------------------------------------------------------------
+Toujours répondre avec politesse. Utiliser le bouton WhatsApp pour
+envoyer des messages vocaux, cela rassure plus que le texte !
+=======================================================================
+💰 INVEST GOLD AFRICA - LA RÉFÉRENCE AU CAMEROUN 🇨🇲
+=======================================================================

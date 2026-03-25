@@ -1,0 +1,33 @@
+﻿===========================================================
+🚀 GUIDE DE LANCEMENT : INVEST GOLD AFRICA 🚀
+===========================================================
+
+Ce dossier contient ton application d'investissement complète.
+Pour la faire fonctionner sur un nouvel ordinateur :
+
+1. INSTALLATION DES OUTILS (Si nécessaire) :
+   - Télécharge et installe Node.js sur : https://nodejs.org
+
+2. PRÉPARATION DU PROJET :
+   - Ouvre un terminal (PowerShell ou CMD) dans ce dossier.
+   - Tape la commande suivante pour installer les modules :
+     npm install express cors mongoose
+
+3. LANCEMENT DU SERVEUR :
+   - Dans le terminal, tape :
+     node server.js
+   - Laisse cette fenêtre ouverte !
+
+4. ACCÈS AUX PAGES :
+   - Pour les CLIENTS : Ouvre "index.html" dans Chrome/Edge.
+   - Pour l'ADMIN (Toi) : Ouvre "admin.html".
+   - Code Secret Admin : 676347057
+
+5. RÉGLAGES RÉSEAU :
+   - Si tu mets le site en ligne (Render/Heroku), n'oublie pas
+     de remplacer "localhost:3000" par ton lien internet
+     dans les fichiers HTML.
+
+===========================================================
+💰 BONNE CHANCE POUR TON BUSINESS, BOSS ! 💰
+===========================================================

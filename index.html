@@ -1,0 +1,569 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invest Gold Africa</title>
+    <style>
+        :root { --gold: #ffcc00; --dark: #0a0a14; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: var(--dark); color: white; display: flex; min-height: 100vh; }
+        #auth-page { position: fixed; inset: 0; background: var(--dark); z-index: 2000; display: flex; justify-content: center; align-items: center; }
+        .auth-card { background: #161625; padding: 35px; border-radius: 20px; width: 350px; border: 1px solid var(--gold); text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; background: #000; border: 1px solid #333; color: #fff; border-radius: 10px; }
+        #side-panel { width: 260px; background: #000; padding: 25px; border-right: 1px solid #222; display: none; flex-direction: column; }
+        .nav-item { padding: 15px; cursor: pointer; border-radius: 12px; margin-bottom: 10px; color: #888; transition: 0.3s; }
+        .nav-item.active, .nav-item:hover { background: var(--gold); color: #000; font-weight: bold; }
+        #main-content { flex: 1; padding: 40px; display: none; }
+        .view { display: none; animation: fadeIn 0.4s; } .view.active { display: block; }
+        .card { background: #161625; padding: 30px; border-radius: 20px; border-left: 5px solid var(--gold); margin-top: 20px; }
+        .btn { background: var(--gold); color: #000; border: none; padding: 15px; border-radius: 12px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; }
+        .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; margin-top: 25px; }
+        .plan-card { background: #1c1c30; padding: 20px; border-radius: 15px; text-align: center; border: 1px solid #333; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div id="auth-page">
+        <div class="auth-card">
+            <h1 style="color:var(--gold); margin-bottom:20px;">GOLD INVEST</h1>
+            <input type="text" id="u-in" placeholder="Nom d'utilisateur">
+            <input type="password" id="p-in" placeholder="Mot de passe">
+            <input type="text" id="r-in" placeholder="Code Parrain (Optionnel)">
+            <button class="btn" onclick="handleAuth()">DÉMARRER</button>
+        </div>
+    </div>
+
+    <div id="side-panel">
+        <h2 style="color:var(--gold); margin-bottom:40px;">DASHBOARD</h2>
+        <div class="nav-item active" onclick="showView('dash', this)">🏠 Accueil</div>
+        <div class="nav-item" onclick="showView('plans', this)">📈 Investir</div>
+        <div class="nav-item" onclick="showView('dep', this)">💳 Dépôt</div>
+        <div class="nav-item" onclick="showView('wit', this)">💸 Retrait</div>
+        <div class="nav-item" onclick="location.reload()" style="margin-top:auto; color:#ff4444;">🚪 Déconnexion</div>
+    </div>
+
+    <div id="main-content">
+        <div id="dash" class="view active">
+            <h1>Bienvenue, <span id="user-display" style="color:var(--gold);">...</span></h1>
+            <div class="card">
+                <p style="color:#aaa;">SOLDE DISPONIBLE</p>
+                <h1 style="font-size:3.5rem;"><span id="bal-display">0</span> <small style="font-size:1.5rem;">FCFA</small></h1>
+            </div>
+        </div>
+
+        <div id="plans" class="view">
+            <h1>Nos Plans de Profit</h1>
+            <div class="plans-grid">
+                <div class="plan-card"><h3>3 000 F</h3><p>Gain: +500 F</p><button class="btn" onclick="buyPlan(3000)">Activer</button></div>
+                <div class="plan-card"><h3>10 000 F</h3><p>Gain: +2 000 F</p><button class="btn" onclick="buyPlan(10000)">Activer</button></div>
+                <div class="plan-card"><h3>25 000 F</h3><p>Gain: +6 000 F</p><button class="btn" onclick="buyPlan(25000)">Activer</button></div>
+            </div>
+        </div>
+
+        <div id="dep" class="view">
+            <h1>Dépôt MoMo (676347057)</h1>
+            <div class="card">
+                <input type="number" id="d-amt" placeholder="Montant (FCFA)">
+                <input type="text" id="d-tx" placeholder="ID Transaction / Numéro">
+                <button class="btn" onclick="sendDep()">ENVOYER LA PREUVE</button>
+            </div>
+        </div>
+
+        <div id="wit" class="view">
+            <h1>Retrait (Samedi / Dimanche)</h1>
+            <div class="card" style="text-align:center;">
+                <input type="number" id="w-amt" placeholder="Montant à retirer">
+                <button class="btn" onclick="startWit()">RETRAIT VERS MTN</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+
+        async function handleAuth() {
+            const username = document.getElementById('u-in').value;
+            const password = document.getElementById('p-in').value;
+            const referralCode = document.getElementById('r-in').value;
+            
+            const res = await fetch('http://localhost:3000/api/register', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ username, password, referralCode })
+            });
+            const data = await res.json();
+            if(data.error) return alert(data.error);
+            
+            currentUser = data;
+            document.getElementById('auth-page').style.display = 'none';
+            document.getElementById('side-panel').style.display = 'flex';
+            document.getElementById('main-content').style.display = 'block';
+            document.getElementById('user-display').innerText = data.username;
+            syncData();
+        }
+
+        function showView(id, el) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        async function buyPlan(amount) {
+            const res = await fetch('http://localhost:3000/api/invest', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ userId: currentUser.id, amount })
+            });
+            const data = await res.json();
+            if(data.newBalance !== undefined) {
+                alert("🚀 Plan activé avec succès !");
+                syncData();
+            } else { alert("❌ Solde insuffisant !"); }
+        }
+
+        async function sendDep() {
+            const amount = document.getElementById('d-amt').value;
+            const txId = document.getElementById('d-tx').value;
+            await fetch('http://localhost:3000/api/deposit-request', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ userId: currentUser.id, username: currentUser.username, txId, amount })
+            });
+            alert("✅ Reçu ! Validation en cours par le Boss.");
+        }
+
+        async function syncData() {
+            if(!currentUser) return;
+            const res = await fetch(`http://localhost:3000/api/user-data/${currentUser.id}`);
+            const data = await res.json();
+            document.getElementById('bal-display').innerText = data.balance.toLocaleString();
+        }
+
+        async function startWit() {
+            const amt = document.getElementById('w-amt').value;
+            const check = await fetch('http://localhost:3000/api/check-weekend').then(r => r.json());
+            if(!check.canWithdraw) return alert("⏳ Retraits ouverts uniquement le week-end !");
+            if(amt > currentUser.balance) return alert("❌ Solde insuffisant !");
+            alert("💸 Demande de retrait envoyée ! Traitement en cours...");
+        }
+
+        setInterval(syncData, 3000); // Mise à jour automatique toutes les 3 secondes
+    </script>
+</body>
+</html>
+<!-- Ajoute cet élément audio caché dans ton body (index.html) -->
+<audio id="money-sound" src="https://assets.mixkit.co"></audio>
+
+<script>
+// Variables pour suivre l'ancien solde
+let lastBalance = 0;
+
+// On modifie la fonction syncData pour jouer le son
+async function syncData() {
+    if(!currentUser) return;
+    try {
+        const res = await fetch(`http://localhost:3000/api/user-data/${currentUser.id}`);
+        const data = await res.json();
+        
+        // SI LE NOUVEAU SOLDE EST SUPÉRIEUR À L'ANCIEN -> ON JOUE LE SON
+        if (data.balance > lastBalance && lastBalance !== 0) {
+            document.getElementById('money-sound').play();
+            showNotification(`+${data.balance - lastBalance} FCFA reçus ! 💰`);
+        }
+        
+        lastBalance = data.balance;
+        document.getElementById('bal-display').innerText = data.balance.toLocaleString();
+    } catch(e) { console.log("Erreur sync"); }
+}
+
+// Petite fonction pour afficher une notification visuelle flash
+function showNotification(msg) {
+    const notify = document.createElement('div');
+    notify.innerText = msg;
+    notify.style.cssText = "position:fixed; top:20px; right:20px; background:#ffcc00; color:#000; padding:15px; border-radius:10px; font-weight:bold; z-index:3000; animation: fadeIn 0.5s";
+    document.body.appendChild(notify);
+    setTimeout(() => notify.remove(), 4000);
+}
+
+// On garde l'intervalle de 3 secondes
+setInterval(syncData, 3000);
+</script>
+<script>
+let currentUser = JSON.parse(localStorage.getItem('user')) || null;
+
+// Si l'utilisateur est déjà connecté au chargement
+window.onload = () => {
+    if(currentUser) {
+        document.getElementById('auth-page').style.display = 'none';
+        document.getElementById('side-panel').style.display = 'flex';
+        document.getElementById('main-content').style.display = 'block';
+        document.getElementById('user-display').innerText = currentUser.username;
+        syncData();
+    }
+};
+
+async function handleAuth() {
+    const username = document.getElementById('u-in').value;
+    const password = document.getElementById('p-in').value;
+    const referralCode = document.getElementById('r-in').value;
+    
+    const res = await fetch('http://localhost:3000/api/register', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ username, password, referralCode })
+    });
+    const data = await res.json();
+    
+    if(data.id) {
+        currentUser = data;
+        localStorage.setItem('user', JSON.stringify(data)); // SAUVEGARDE ICI
+        location.reload(); // On recharge pour tout activer
+    } else {
+        alert("Erreur de connexion");
+    }
+}
+
+async function syncData() {
+    if(!currentUser) return;
+    try {
+        const res = await fetch(`http://localhost:3000/api/user-data/${currentUser.id}`);
+        const data = await res.json();
+        
+        // Mise à jour de l'affichage
+        const balEl = document.getElementById('bal-display');
+        if(balEl) balEl.innerText = data.balance.toLocaleString();
+        
+        // Mise à jour de l'objet local
+        currentUser.balance = data.balance;
+    } catch(e) {
+        console.log("Serveur non joignable");
+    }
+}
+
+// Rafraîchir toutes les 3 secondes
+setInterval(syncData, 3000);
+</script>
+<script>
+// Remplace la fonction handleAuth ou ajoute ce bloc après la création du compte
+function welcomeNewUser(username) {
+    const welcomeBox = document.createElement('div');
+    welcomeBox.id = "welcome-popup";
+    welcomeBox.style.cssText = "position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:5000; display:flex; justify-content:center; align-items:center; padding:20px;";
+    
+    welcomeBox.innerHTML = `
+        <div style="background:#161625; padding:40px; border-radius:20px; border:2px solid #ffcc00; text-align:center; max-width:400px; animation: slideUp 0.5s;">
+            <h1 style="color:#ffcc00; margin-bottom:20px;">Félicitations ${username} ! 🎊</h1>
+            <p style="color:#eee; margin-bottom:20px; line-height:1.6;">
+                Bienvenue chez <b>Invest Gold Africa</b>.<br><br>
+                🚀 <b>Étape 1 :</b> Faites un dépôt de 3000 F au <b>676347057</b>.<br>
+                📈 <b>Étape 2 :</b> Activez votre Plan Star.<br>
+                👥 <b>Étape 3 :</b> Partagez votre lien pour gagner <b>2000 F</b> par ami !
+            </p>
+            <button class="btn" onclick="document.getElementById('welcome-popup').remove()" style="background:#ffcc00; color:#000; padding:15px 30px; border-radius:10px; font-weight:bold; cursor:pointer; border:none; width:100%;">C'EST PARTI ! 💸</button>
+        </div>
+    `;
+    document.body.appendChild(welcomeBox);
+}
+
+// Appelle cette fonction juste après la réussite du fetch de 'register'
+// Exemple : if(data.id) { welcomeNewUser(data.username); ... }
+</script>
+<!-- Ajoute ceci dans la vue #dash de ton index.html -->
+<div id="active-plan-container" class="card" style="display:none; border-color: #27ae60; background: rgba(39, 174, 96, 0.1);">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+            <p style="color:#27ae60; font-weight:bold; font-size:12px;">● PLAN EN COURS</p>
+            <h3 id="plan-name" style="color:white; margin:5px 0;">---</h3>
+            <p id="plan-date" style="font-size:12px; color:#aaa;">Activé le : --/--/--</p>
+        </div>
+        <div style="text-align:right;">
+            <h2 id="plan-profit" style="color:#ffcc00;">+0 F</h2>
+            <p style="font-size:10px; color:#aaa;">Gain à venir</p>
+        </div>
+    </div>
+</div>
+
+<script>
+// Modifie ta fonction syncData() pour afficher le plan
+async function syncData() {
+    if(!currentUser) return;
+    const res = await fetch(`http://localhost:3000/api/user-data/${currentUser.id}`);
+    const data = await res.json();
+    
+    // Affichage du plan s'il existe
+    if(data.activePlan) {
+        document.getElementById('active-plan-container').style.display = 'block';
+        document.getElementById('plan-name').innerText = data.activePlan.name;
+        document.getElementById('plan-date').innerText = "Activé le : " + data.activePlan.date;
+        document.getElementById('plan-profit').innerText = "+" + data.activePlan.profit + " F";
+    }
+    
+    document.getElementById('bal-display').innerText = data.balance.toLocaleString();
+}
+</script>
+<!-- Ajoute cet onglet dans ton Side Panel -->
+<div class="nav-item" onclick="showView('mining', this)">⛏️ Minage Gold</div>
+
+<!-- Ajoute cette vue dans #main-content -->
+<div id="mining" class="view">
+    <h1>Station de Minage</h1>
+    <div class="card" style="text-align:center;">
+        <div id="mining-status" style="margin-bottom:20px;">
+            <h2 id="mine-text">Prêt à Miner</h2>
+            <p id="mine-sub">Cliquez pour générer vos profits quotidiens</p>
+        </div>
+        
+        <div style="width:100%; background:#222; height:25px; border-radius:15px; overflow:hidden; margin:20px 0; border:1px solid #444;">
+            <div id="mine-bar" style="width:0%; background:linear-gradient(90deg, #ffcc00, #ff9900); height:100%; transition: 0.5s;"></div>
+        </div>
+
+        <button id="btn-mine" class="btn" onclick="startMining()">LANCER LE MINAGE (24H)</button>
+        <button id="btn-claim" class="btn" style="display:none; background:#27ae60;" onclick="claimMining()">RÉCUPÉRER MES GAINS</button>
+    </div>
+</div>
+
+<script>
+let mineInterval;
+
+async function startMining() {
+    const res = await fetch('http://localhost:3000/api/start-mine', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ userId: currentUser.id })
+    });
+    if(res.ok) {
+        alert("⛏️ Minage démarré pour 24h !");
+        updateMiningUI(Date.now());
+    } else {
+        alert("Attendez la fin du cycle actuel !");
+    }
+}
+
+function updateMiningUI(startTime) {
+    const btn = document.getElementById('btn-mine');
+    const bar = document.getElementById('mine-bar');
+    const text = document.getElementById('mine-text');
+    
+    clearInterval(mineInterval);
+    mineInterval = setInterval(() => {
+        const now = Date.now();
+        const elapsed = now - startTime;
+        const total = 86400000; // 24 heures
+        let percent = (elapsed / total) * 100;
+
+        if (percent >= 100) {
+            percent = 100;
+            clearInterval(mineInterval);
+            document.getElementById('btn-claim').style.display = 'block';
+            btn.style.display = 'none';
+            text.innerText = "✅ Minage Terminé !";
+        } else {
+            btn.disabled = true;
+            btn.innerText = "MINAGE EN COURS...";
+            text.innerText = "Extraction d'Or... " + percent.toFixed(2) + "%";
+        }
+        bar.style.width = percent + "%";
+    }, 1000);
+}
+
+async function claimMining() {
+    const res = await fetch('http://localhost:3000/api/claim-mine', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ userId: currentUser.id })
+    });
+    if(res.ok) {
+        const data = await res.json();
+        alert("💰 Gains ajoutés à votre solde !");
+        location.reload();
+    }
+}
+</script>
+<!-- Ajoute ces onglets dans ton Side Panel -->
+<div class="nav-item" onclick="showView('rewards', this)">🎁 Cadeaux & VIP</div>
+<div class="nav-item" onclick="showView('wheel', this)">🎡 Roue Chance</div>
+
+<!-- VUE RÉCOMPENSES & VIP -->
+<div id="rewards" class="view">
+    <h1>Espace Fidélité</h1>
+    <div class="card" style="text-align:center; border-color: #3498db;">
+        <h3 id="user-rank-name">RANG : BRONZE</h3>
+        <p id="rank-info" style="font-size:12px; color:#aaa; margin-bottom:15px;">Parrainez plus pour devenir GOLD BOSS</p>
+        <button class="btn" style="background:#3498db;" onclick="claimDaily()">🎁 RÉCUPÉRER 50F (AUJOURD'HUI)</button>
+    </div>
+</div>
+
+<!-- VUE ROUE DE LA FORTUNE -->
+<div id="wheel" class="view">
+    <h1>Roue de la Fortune</h1>
+    <div class="card" style="text-align:center;">
+        <div id="wheel-graphic" style="width:150px; height:150px; border-radius:50%; border:5px solid #ffcc00; margin:20px auto; display:flex; justify-content:center; align-items:center; font-weight:bold; transition: 3s cubic-bezier(0.1, 0, 0, 1);">
+            ?
+        </div>
+        <button class="btn" id="spin-btn" onclick="spinWheel()">TENTER MA CHANCE (GRATUIT)</button>
+    </div>
+</div>
+
+<script>
+async function claimDaily() {
+    const res = await fetch('http://localhost:3000/api/daily-bonus', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ userId: currentUser.id })
+    });
+    const data = await res.json();
+    if(res.ok) { alert(data.message); syncData(); } else { alert(data.error); }
+}
+
+async function spinWheel() {
+    const btn = document.getElementById('spin-btn');
+    const wheel = document.getElementById('wheel-graphic');
+    btn.disabled = true;
+    wheel.style.transform = "rotate(1800deg)"; // Animation de rotation
+    
+    const res = await fetch('http://localhost:3000/api/spin-wheel', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ userId: currentUser.id })
+    });
+    const data = await res.json();
+    
+    setTimeout(() => {
+        wheel.style.transform = "rotate(0deg)";
+        wheel.innerText = data.win + "F";
+        alert("🎉 Bravo ! Vous avez gagné " + data.win + " FCFA");
+        btn.disabled = false;
+        syncData();
+    }, 3000);
+}
+</script>
+<!-- Ajoute cet onglet dans ton Side Panel -->
+<div class="nav-item" onclick="showView('leaderboard', this); loadLeaderboard()">🏆 Classement VIP</div>
+
+<!-- VUE LEADERBOARD -->
+<div id="leaderboard" class="view">
+    <h1>👑 Les Rois du Parrainage</h1>
+    <p style="color:#aaa; margin-bottom:20px;">Top 10 des meilleurs parrains de la plateforme.</p>
+    <div class="card" style="padding:10px; border-color: #ffcc00;">
+        <table style="width:100%; border-collapse:collapse; color:white; text-align:left;">
+            <thead>
+                <tr style="border-bottom: 1px solid #333; color:#ffcc00;">
+                    <th style="padding:10px;">Rang</th>
+                    <th>Investisseur</th>
+                    <th>Amis</th>
+                    <th>Niveau</th>
+                </tr>
+            </thead>
+            <tbody id="leader-list">
+                <!-- Les données arriveront ici -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+async function loadLeaderboard() {
+    const res = await fetch('http://localhost:3000/api/leaderboard');
+    const data = await res.json();
+    const list = document.getElementById('leader-list');
+    
+    list.innerHTML = data.map((user, index) => `
+        <tr style="border-bottom: 1px solid #222;">
+            <td style="padding:15px; font-weight:bold;">${index + 1}</td>
+            <td style="font-weight:bold;">${user.username} ${index === 0 ? '👑' : ''}</td>
+            <td style="color:#ffcc00;">${user.refs} refs</td>
+            <td style="font-size:10px;"><span style="background:#444; padding:3px 8px; border-radius:10px;">${user.rank}</span></td>
+        </tr>
+    `).join('');
+}
+</script>
+<!-- Ajoute cet onglet dans ton Side Panel -->
+<div class="nav-item" onclick="showView('chat', this); startChatSync()">💬 Chat Public</div>
+
+<!-- VUE CHAT GLOBAL -->
+<div id="chat" class="view">
+    <h1>💬 Salon des Investisseurs</h1>
+    <div id="chat-box" style="height: 350px; background: #0a0a14; border-radius: 15px; padding: 15px; overflow-y: auto; border: 1px solid #222; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px;">
+        <!-- Les messages arrivent ici -->
+    </div>
+    <div style="display: flex; gap: 10px;">
+        <input type="text" id="chat-input" placeholder="Écrivez un message..." style="flex: 1; margin: 0;">
+        <button class="btn" style="width: auto; padding: 0 20px; margin: 0;" onclick="sendMessage()">Envoyer</button>
+    </div>
+</div>
+
+<script>
+let chatInterval;
+
+async function sendMessage() {
+    const input = document.getElementById('chat-input');
+    if (!input.value) return;
+
+    await fetch('http://localhost:3000/api/send-message', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ userId: currentUser.id, text: input.value })
+    });
+    input.value = "";
+    loadMessages();
+}
+
+async function loadMessages() {
+    const res = await fetch('http://localhost:3000/api/messages');
+    const messages = await res.json();
+    const box = document.getElementById('chat-box');
+    
+    box.innerHTML = messages.map(m => `
+        <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; border-left: 3px solid #ffcc00;">
+            <div style="display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 5px;">
+                <span style="color: #ffcc00; font-weight: bold;">${m.username} <small style="background:#444; color:#fff; padding: 2px 5px; border-radius: 5px;">${m.rank}</small></span>
+                <span style="color: #666;">${m.time}</span>
+            </div>
+            <div style="font-size: 13px; color: #eee;">${m.text}</div>
+        </div>
+    `).join('');
+    box.scrollTop = box.scrollHeight; // Auto-scroll vers le bas
+}
+
+function startChatSync() {
+    loadMessages();
+    clearInterval(chatInterval);
+    chatInterval = setInterval(loadMessages, 3000); // Sync toutes les 3 secondes
+}
+</script>
+<script>
+// Modification de la fonction loadMessages pour ajouter le bouton de suppression (visuel Admin)
+async function loadMessages() {
+    const res = await fetch('http://localhost:3000/api/messages');
+    const messages = await res.json();
+    const box = document.getElementById('chat-box');
+    
+    // On vérifie si l'utilisateur est le Boss (via son nom ou ID)
+    const isAdmin = currentUser && currentUser.username.toLowerCase() === 'admin';
+
+    box.innerHTML = messages.map((m, index) => `
+        <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; border-left: 3px solid #ffcc00; position:relative;">
+            <div style="display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 5px;">
+                <span style="color: #ffcc00; font-weight: bold;">${m.username} <small style="background:#444; color:#fff; padding: 2px 5px; border-radius: 5px;">${m.rank}</small></span>
+                <span style="color: #666;">${m.time}</span>
+            </div>
+            <div style="font-size: 13px; color: #eee;">${m.text}</div>
+            ${isAdmin ? `<button onclick="deleteMsg(${index})" style="position:absolute; right:5px; bottom:5px; background:red; color:white; border:none; font-size:8px; cursor:pointer; border-radius:3px;">SUPPRIMER</button>` : ''}
+        </div>
+    `).join('');
+}
+
+async function deleteMsg(index) {
+    if(confirm("Supprimer ce message Boss ?")) {
+        await fetch('http://localhost:3000/api/admin/delete-message', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ msgIndex: index })
+        });
+        loadMessages();
+    }
+}
+</script>

@@ -1,0 +1,87 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preuves de Paiement | Invest Gold Africa</title>
+    <link href="https://fonts.googleapis.com" rel="stylesheet">
+    <style>
+        :root { --gold: #ffcc00; --dark: #05050a; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
+        body { background: var(--dark); color: white; padding-top: 100px; }
+
+        header { 
+            background: rgba(0,0,0,0.9); padding: 15px 10%; display: flex; 
+            justify-content: space-between; align-items: center; position: fixed; 
+            width: 100%; top: 0; z-index: 1000; border-bottom: 1px solid var(--gold);
+        }
+        .logo { font-size: 20px; font-weight: 900; color: var(--gold); text-decoration: none; }
+        
+        .container { max-width: 1200px; margin: auto; padding: 20px; text-align: center; }
+        h1 { font-size: 2.5rem; margin-bottom: 10px; color: var(--gold); }
+        .subtitle { color: #888; margin-bottom: 50px; }
+
+        /* GALERIE DE CAPTURES */
+        .proof-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; }
+        .proof-card { 
+            background: #11111a; border-radius: 15px; overflow: hidden; 
+            border: 1px solid #222; transition: 0.3s; padding-bottom: 15px;
+        }
+        .proof-card:hover { border-color: var(--gold); transform: scale(1.02); }
+        .proof-img { width: 100%; height: 400px; object-fit: cover; background: #222; }
+        .proof-info { padding: 15px; }
+        .amount { font-size: 1.5rem; font-weight: 900; color: #27ae60; }
+        .user { font-size: 0.9rem; color: #aaa; margin-top: 5px; }
+
+        .btn-action { 
+            display: inline-block; background: var(--gold); color: black; 
+            padding: 15px 40px; border-radius: 50px; text-decoration: none; 
+            font-weight: 900; margin-top: 50px; text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="home.html" class="logo">GOLD INVEST</a>
+        <a href="index.html" style="color:white; text-decoration:none; font-weight:bold;">S'INSCRIRE ➜</a>
+    </header>
+
+    <div class="container">
+        <h1>PREUVES DE RETRAIT 💸</h1>
+        <p class="subtitle">Ils ont fait confiance, ils ont gagné. Voici les derniers paiements MTN MoMo.</p>
+
+        <div class="proof-grid">
+            <!-- CARDE DE PREUVE 1 -->
+            <div class="proof-card">
+                <img src="https://via.placeholder.com" class="proof-img" alt="Preuve MTN">
+                <div class="proof-info">
+                    <div class="amount">25 000 FCFA</div>
+                    <div class="user">Retrait par Samuel E. (Douala)</div>
+                </div>
+            </div>
+
+            <!-- CARDE DE PREUVE 2 -->
+            <div class="proof-card">
+                <img src="https://via.placeholder.com" class="proof-img" alt="Preuve MTN">
+                <div class="proof-info">
+                    <div class="amount border">10 000 FCFA</div>
+                    <div class="user">Retrait par Marie L. (Yaoundé)</div>
+                </div>
+            </div>
+
+            <!-- CARDE DE PREUVE 3 -->
+            <div class="proof-card">
+                <img src="https://via.placeholder.com" class="proof-img" alt="Preuve MTN">
+                <div class="proof-info">
+                    <div class="amount">75 000 FCFA</div>
+                    <div class="user">Retrait par Boris K. (Bamenda)</div>
+                </div>
+            </div>
+        </div>
+
+        <a href="index.html" class="btn-action">Je veux aussi mes gains !</a>
+    </div>
+
+</body>
+</html>

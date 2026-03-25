@@ -1,0 +1,123 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>ADMIN BOSS - V3</title>
+    <style>
+        body { font-family: sans-serif; background: #0a0a14; color: white; padding: 20px; }
+        .card { background: #161625; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #333; }
+        table { width: 100%; border-collapse: collapse; background: white; color: #333; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+        th { background: #ffcc00; }
+        button { cursor: pointer; padding: 5px 10px; font-weight: bold; border-radius: 4px; border: none; }
+        .btn-valider { background: #27ae60; color: white; }
+        .btn-add { background: #3498db; color: white; }
+        .btn-ban { background: #e74c3c; color: white; }
+    </style>
+</head>
+<body>
+    <h1>👑 PANEL ADMIN RÉPARÉ</h1>
+
+    <div class="card">
+        <h2>📥 DÉPÔTS À VALIDER</h2>
+        <table>
+            <thead><tr><th>Client</th><th>Montant</th><th>ID Transaction</th><th>Action</th></tr></thead>
+            <tbody id="depList"></tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>👥 UTILISATEURS</h2>
+        <table>
+            <thead><tr><th>ID</th><th>Nom</th><th>Solde</th><th>Ajouter F</th><th>Action</th></tr></thead>
+            <tbody id="userList"></tbody>
+        </table>
+    </div>
+
+    <script>
+        async function loadData() {
+            const users = await fetch('http://localhost:3000/api/admin/users').then(r => r.json());
+            const deps = await fetch('http://localhost:3000/api/admin/deposits').then(r => r.json());
+
+            document.getElementById('depList').innerHTML = deps.map(d => `
+                <tr>
+                    <td>${d.username}</td>
+                    <td>${d.amount} F</td>
+                    <td>${d.txId}</td>
+                    <td><button class="btn-valider" onclick="confirmDep('${d.id}')">VALIDER</button></td>
+                </tr>
+            `).join('');
+
+            document.getElementById('userList').innerHTML = users.map(u => `
+                <tr>
+                    <td>${u.id}</td>
+                    <td>${u.username}</td>
+                    <td>${u.balance} F</td>
+                    <td>
+                        <input type="number" id="add-${u.id}" style="width:60px">
+                        <button class="btn-add" onclick="manualAdd(${u.id})">+</button>
+                    </td>
+                    <td><button class="btn-ban" onclick="toggleBan(${u.id})">${u.status === 'Banni' ? 'DÉBAN' : 'BAN'}</button></td>
+                </tr>
+            `).join('');
+        }
+
+        async function confirmDep(id) {
+            console.log("Validation du dépôt ID:", id);
+            const res = await fetch('http://localhost:3000/api/admin/confirm-deposit', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ depId: id })
+            });
+            if(res.ok) { alert("Dépôt validé !"); loadData(); }
+        }
+
+        async function manualAdd(id) {
+            const amt = document.getElementById(`add-${id}`).value;
+            await fetch('http://localhost:3000/api/admin/update-balance', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ userId: id, newBalance: amt, isAdd: true })
+            });
+            loadData();
+        }
+
+        async function toggleBan(id) {
+            await fetch('http://localhost:3000/api/admin/ban', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ userId: id })
+            });
+            loadData();
+        }
+
+        setInterval(loadData, 5000);
+        loadData();
+    </script>
+</body>
+</html>
+<!-- Ajoute ceci juste au-dessus de ton titre "UTILISATEURS" dans admin.html -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+    <div style="background: linear-gradient(135deg, #ffcc00, #ff9900); color: #000; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.3);">
+        <p style="font-weight: bold; text-transform: uppercase; font-size: 12px;">Total Membres</p>
+        <h1 id="count-users" style="font-size: 2.5rem; margin-top: 5px;">0</h1>
+    </div>
+    <div style="background: #1c1c30; color: #fff; padding: 20px; border-radius: 15px; text-align: center; border: 1px solid var(--gold); box-shadow: 0 10px 20px rgba(0,0,0,0.3);">
+        <p style="font-weight: bold; text-transform: uppercase; font-size: 12px; color: var(--gold);">Dépôts en Attente</p>
+        <h1 id="count-deps" style="font-size: 2.5rem; margin-top: 5px; color: #ff4444;">0</h1>
+    </div>
+</div>
+
+<script>
+// Ajoute ceci dans ta fonction loadData() existante dans admin.html
+async function loadData() {
+    const users = await fetch('http://localhost:3000/api/admin/users').then(r => r.json());
+    const deps = await fetch('http://localhost:3000/api/admin/deposits').then(r => r.json());
+
+    // MISE À JOUR DES COMPTEURS
+    document.getElementById('count-users').innerText = users.length;
+    document.getElementById('count-deps').innerText = deps.length;
+
+    // (Le reste de ton code d'affichage des tableaux ici...)
+}
+</script>
